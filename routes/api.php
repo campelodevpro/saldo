@@ -16,7 +16,10 @@ Route::middleware('api')->group(function () {
     Route::post('/processo-pai', [ProcessoController::class, 'criarPai']);
     Route::post('/processo-pai/{id}/filho', [ProcessoController::class, 'criarFilho']);
     Route::get('/processo-pai', [ProcessoController::class, 'listarPais']);
+    
     Route::get('/processo-pai/{id}/saldo', [ProcessoController::class, 'consultarSaldo']);
+    Route::post('/processo-pai/{id}/creditar', [ProcessoController::class, 'creditarValor']);
+
 
 });
 
