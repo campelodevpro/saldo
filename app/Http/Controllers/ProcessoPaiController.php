@@ -22,8 +22,35 @@ class ProcessoPaiController extends Controller
         if ($processoPai) {
             // Atualizar registro existente
             $processoPai->NUMEROAPROVACAO = $processoPai->NUMEROAPROVACAO + 1;
-            // $processoPai->VALORTOTAL = $processoPai->VALORTOTAL + $validatedData['VALORTOTAL'];
+            
+            // Valor Total diferente do valor passado na primeira aprovacao ou na aprovacao anterior
+            // Verifica se o Valor Total mudou em relação à primeira aprovação ou aprovação anterior
+        if ($processoPai->VALORTOTAL !== $validatedData['VALORTOTAL']) {
+            // Calcula a diferença absoluta entre os valores
+            $diferencaNovoValor = abs($processoPai->VALORTOTAL - $validatedData['VALORTOTAL']);
+            
+            // Atualiza o VALORTOTAL e ajusta o SALDO conforme necessário
+            if ($validatedData['VALORTOTAL'] > $processoPai->VALORTOTAL) {
+                // Aumenta o SALDO quando o novo valor é maior
+                $processoPai->SALDO += $diferencaNovoValor;
+            } else {
+                // Reduz o SALDO quando o novo valor é menor, apenas se houver saldo suficiente
+                if ($processoPai->SALDO >= $diferencaNovoValor) {
+                    $processoPai->SALDO -= $diferencaNovoValor;
+                } else {
+                    // Opcional: defina uma lógica para tratar saldo insuficiente
+                    $processoPai->SALDO = 0; // Ou mantenha o saldo como está, se necessário
+                    return response()->json([
+                        'message' => 'R$ Saldo Insuficiente Reduzir Despesa já alocada, Saldo: R$'.$processoPai->SALDO
+                    ], 400);
+                }
+            }
+
+            // Atualiza o VALORTOTAL com o novo valor
             $processoPai->VALORTOTAL = $validatedData['VALORTOTAL'];
+        }
+
+            
             $processoPai->STATUSPROCESSO = $validatedData['STATUSPROCESSO'];
             $processoPai->save();
 
@@ -103,6 +130,8 @@ class ProcessoPaiController extends Controller
         ]);
 
         $processoPai = ProcessoPai::where('NPROCPAI', $validatedData['NPROCPAI'])->first();
+
+        
         
         if (!$processoPai) {
             return response()->json([
@@ -110,18 +139,44 @@ class ProcessoPaiController extends Controller
             ], 404);
         }
 
-        if ($validatedData['VALOR'] > $processoPai->SALDO) {
+        $processoFilho = ProcessoFilho::where('NPROCFILHO', $validatedData['NPROCFILHO'])
+                                      ->where('NPROCPAI', $validatedData['NPROCPAI'])
+                                      ->first();
+
+        // Verificar se o valor informado eh menor que o valor existente do processo filho
+        //  Estornar, devolver o valor do filho para o saldo do Pai
+        if( $validatedData['VALOR'] < $processoFilho->VALOR){
+            // Atualizar saldo do processo pai com o valor estornado
+            $processoPai->SALDO += $processoFilho->VALOR;
+            $processoFilho->VALOR = 0.0;
+        
+            $processoPai->save();
+            $processoFilho->save();
+        }
+
+
+        if (($validatedData['VALOR'] > $processoPai->SALDO )) {
             return response()->json([
                 'message' => 'O valor do processo filho não pode ser maior que o saldo do processo pai.'
             ], 400);
         }
         
 
-        $processoFilho = ProcessoFilho::where('NPROCFILHO', $validatedData['NPROCFILHO'])->first(); 
+        // $processoFilho = ProcessoFilho::where('NPROCFILHO', $validatedData['NPROCFILHO'])->first(); 
         // $processoFilho = ProcessoFilho::where('NPROCFILHO', $validatedData['NPROCFILHO'])->first() ?? false;
+        // $processoFilho = ProcessoFilho::where('NPROCFILHO', $validatedData['NPROCFILHO'])
+                                    //   ->where('NPROCPAI', $validatedData['NPROCPAI'])
+                                    //   ->first();
 
 
         if ($processoFilho) {
+            // Verificar se o novo valor não excede o saldo
+            if (($validatedData['VALOR'] + $processoFilho->VALOR) > $processoPai->SALDO) {
+                return response()->json([
+                    'message' => 'Valor total do processo filho excede o saldo disponível do processo pai.'
+                ], 400);
+            }   
+            
             // Atualizar registro existente
             $processoFilho->NUMEROAPROVACAO = $processoFilho->NUMEROAPROVACAO + 1;
             $processoFilho->VALOR = $processoFilho->VALOR + $validatedData['VALOR'];
