@@ -11,11 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('processo_filho', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('processo_pai_id')->constrained('processo_pai')->onDelete('cascade');
-            $table->decimal('valor', 18, 2);
-            $table->timestamps();
+        Schema::create('PROCESSOFILHO', function (Blueprint $table) {
+            $table->id('id'); // ID primário
+            $table->foreignId('PROCESSOPAI_ID') // Chave estrangeira para PROCESSOPAI
+                ->constrained('PROCESSOPAI')
+                ->onDelete('cascade');
+            $table->string('NPROCFILHO'); // Número do processo filho
+            $table->string('NPROCPAI'); // Número do processo pai (redundância, opcional)
+            $table->decimal('VALOR', 18, 2); // Valor com precisão
+            $table->string('STATUSPROCESSO'); // Status do processo
+            $table->timestamps(); // Colunas de created_at e updated_at
+
         });
     }
 
@@ -24,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('processo_filho');
+        Schema::dropIfExists('PROCESSOFILHO');
     }
 };

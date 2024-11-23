@@ -3,15 +3,20 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ProcessoPai extends Model
 {
-    protected $table = 'processo_pai';
-    protected $fillable = ['nome', 'saldo', 'valor_total'];
+    use HasFactory;
 
-    public function filhos()
-    {
-        return $this->hasMany(ProcessoFilho::class, 'processo_pai_id');
-    }
+    protected $table = 'PROCESSOPAI';
+
+    protected $fillable = [
+        'NPROCPAI',
+        'VALORTOTAL',
+        'NUMEROAPROVACAO',
+        'STATUSPROCESSO',
+        'SALDO',
+    ];
 
 }

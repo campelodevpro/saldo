@@ -11,12 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('processo_pai', function (Blueprint $table) {
-            $table->id();
-            $table->string('nome');
-            $table->decimal('saldo', 18, 2);
-            $table->decimal('valor_total', 18, 2);
-            $table->timestamps();
+        Schema::create('PROCESSOPAI', function (Blueprint $table) {
+           
+            $table->id('id'); // ID primário
+            $table->string('NPROCPAI')->unique(); // Número do processo pai (único)
+            $table->decimal('VALORTOTAL', 18, 2); // Valor total com precisão
+            $table->string('NUMEROAPROVACAO')->nullable(); // Número de aprovação (opcional)
+            $table->string('STATUSPROCESSO'); // Status do processo
+            $table->decimal('SALDO', 18, 2); // Saldo com precisão
+            $table->timestamps(); // Colunas de created_at e updated_at
         });
     }
 
@@ -25,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('processo_pai');
+        Schema::dropIfExists('PROCESSOPAI');
     }
 };

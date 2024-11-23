@@ -1,0 +1,112 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreateProcessTables extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        // Criando a tabela PROCESSOPAI
+        Schema::create('PROCESSOPAI', function (Blueprint $table) {
+            $table->id('id'); // ID primário
+            $table->string('NPROCPAI')->unique(); // Número do processo pai (único)
+            $table->decimal('VALORTOTAL', 15, 2); // Valor total com precisão
+            $table->string('NUMEROAPROVACAO')->nullable(); // Número de aprovação (opcional)
+            $table->string('STATUSPROCESSO'); // Status do processo
+            $table->decimal('SALDO', 15, 2); // Saldo com precisão
+            $table->timestamps(); // Colunas de created_at e updated_at
+        });
+
+        // Criando a tabela PROCESSOFILHO
+        Schema::create('PROCESSOFILHO', function (Blueprint $table) {
+            $table->id('id'); // ID primário
+            $table->foreignId('PROCESSOPAI_ID') // Chave estrangeira para PROCESSOPAI
+                ->constrained('PROCESSOPAI')
+                ->onDelete('cascade');
+            $table->string('NPROCFILHO'); // Número do processo filho
+            $table->string('NPROCPAI'); // Número do processo pai (redundância, opcional)
+            $table->decimal('VALOR', 15, 2); // Valor com precisão
+            $table->string('STATUSPROCESSO'); // Status do processo
+            $table->timestamps(); // Colunas de created_at e updated_at
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('PROCESSOFILHO');
+        Schema::dropIfExists('PROCESSOPAI');
+    }
+}
+
+
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\ProcessoPai;
+
+class ProcessoPaiController extends Controller
+{
+    /**
+     * Handle the request to create or update a PROCESSOPAI record.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function novoProcPai(Request $request)
+    {
+        $validatedData = $request->validate([
+            'NPROCPAI' => 'required|string',
+            'VALORTOTAL' => 'required|numeric',
+            'STATUSPROCESSO' => 'required|string',
+        ]);
+
+        $processoPai = ProcessoPai::where('NPROCPAI', $validatedData['NPROCPAI'])->first();
+
+        if ($processoPai) {
+            // Atualizar registro existente
+            $processoPai->NUMEROAPROVACAO = $processoPai->NUMEROAPROVACAO + 1;
+            $processoPai->VALORTOTAL = $processoPai->VALORTOTAL + $validatedData['VALORTOTAL'];
+            $processoPai->STATUSPROCESSO = $validatedData['STATUSPROCESSO'];
+            $processoPai->save();
+
+            return response()->json([
+                'message' => 'Processo Pai atualizado com sucesso.',
+                'processoPai' => $processoPai
+            ], 200);
+        } else {
+            // Criar novo registro
+            $processoPai = ProcessoPai::create([
+                'NPROCPAI' => $validatedData['NPROCPAI'],
+                'VALORTOTAL' => $validatedData['VALORTOTAL'],
+                'NUMEROAPROVACAO' => 1,
+                'STATUSPROCESSO' => $validatedData['STATUSPROCESSO'],
+                'SALDO' => $validatedData['VALORTOTAL'],
+            ]);
+
+            return response()->json([
+                'message' => 'Processo Pai criado com sucesso.',
+                'processoPai' => $processoPai
+            ], 201);
+        }
+    }
+}
+
+// Routes
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProcessoPaiController;
+
+Route::post('/novoprocpai', [ProcessoPaiController::class, 'novoProcPai']);
