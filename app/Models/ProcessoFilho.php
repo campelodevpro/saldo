@@ -27,8 +27,8 @@ class ProcessoFilho extends Model
         'NPROCFILHO',
         'NPROCPAI',
         'VALOR',
-        'STATUSPROCESSO',
         'NUMEROAPROVACAO',
+        'STATUSPROCESSO',
     ];
 
     /**

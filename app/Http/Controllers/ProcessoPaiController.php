@@ -143,33 +143,25 @@ class ProcessoPaiController extends Controller
                                       ->where('NPROCPAI', $validatedData['NPROCPAI'])
                                       ->first();
 
-        // Verificar se o valor informado eh menor que o valor existente do processo filho
-        //  Estornar, devolver o valor do filho para o saldo do Pai
-        if( $validatedData['VALOR'] < $processoFilho->VALOR){
-            // Atualizar saldo do processo pai com o valor estornado
-            $processoPai->SALDO += $processoFilho->VALOR;
-            $processoFilho->VALOR = 0.0;
-        
-            $processoPai->save();
-            $processoFilho->save();
-        }
-
-
         if (($validatedData['VALOR'] > $processoPai->SALDO )) {
             return response()->json([
                 'message' => 'O valor do processo filho não pode ser maior que o saldo do processo pai.'
             ], 400);
         }
         
-
-        // $processoFilho = ProcessoFilho::where('NPROCFILHO', $validatedData['NPROCFILHO'])->first(); 
-        // $processoFilho = ProcessoFilho::where('NPROCFILHO', $validatedData['NPROCFILHO'])->first() ?? false;
-        // $processoFilho = ProcessoFilho::where('NPROCFILHO', $validatedData['NPROCFILHO'])
-                                    //   ->where('NPROCPAI', $validatedData['NPROCPAI'])
-                                    //   ->first();
-
-
         if ($processoFilho) {
+            //quando o processo filho for zerar o valor para liberar saldo
+            $saldoFilho = $processoFilho->VALOR;
+            if(($validatedData['VALOR'] == 0.0) || ($validatedData['VALOR'] == 0.00)){
+                $processoPai->SALDO += $saldoFilho;
+                $processoFilho->VALOR = $validatedData['VALOR'];
+                $processoPai->save();
+                $processoFilho->save();
+
+                return response()->json([
+                    'message' => 'Valor do Filho atualizado R$ 0.00. Valor liberado para Pai R$ '.$saldoFilho
+                ], 400);
+            }
             // Verificar se o novo valor não excede o saldo
             if (($validatedData['VALOR'] + $processoFilho->VALOR) > $processoPai->SALDO) {
                 return response()->json([
@@ -177,6 +169,17 @@ class ProcessoPaiController extends Controller
                 ], 400);
             }   
             
+            // Verificar se o valor informado eh menor que o valor existente do processo filho
+            //  Estornar, devolver o valor do filho para o saldo do Pai
+            // if( $validatedData['VALOR'] < $processoFilho->VALOR){
+            //     // Atualizar saldo do processo pai com o valor estornado
+            //     $processoPai->SALDO += $processoFilho->VALOR;
+            //     $processoFilho->VALOR = 0.0;
+            
+            //     $processoPai->save();
+            //     $processoFilho->save();
+            // }
+
             // Atualizar registro existente
             $processoFilho->NUMEROAPROVACAO = $processoFilho->NUMEROAPROVACAO + 1;
             $processoFilho->VALOR = $processoFilho->VALOR + $validatedData['VALOR'];
@@ -212,6 +215,19 @@ class ProcessoPaiController extends Controller
    
    
     }
+
+    // Lista todos processos filhos em andamento
+    public function TodosFilhosEmAndamento()
+    {
+        $processos = ProcessoFilho::where('STATUSPROCESSO', 'Em andamento')->get();
+
+        return response()->json([
+            'message' => 'Processos Pai em andamento listados com sucesso.',
+            'processos' => $processos
+        ], 200);
+    }
+
+
 
 
 

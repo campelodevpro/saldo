@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('NPROCFILHO'); // Número do processo filho
             $table->string('NPROCPAI'); // Número do processo pai (redundância, opcional)
             $table->decimal('VALOR', 18, 2); // Valor com precisão
+            $table->string('NUMEROAPROVACAO')->nullable(); // Número de aprovação (opcional)
             $table->string('STATUSPROCESSO'); // Status do processo
             $table->timestamps(); // Colunas de created_at e updated_at
 
