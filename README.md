@@ -10,3 +10,12 @@ Processo Pai em Andamento podem ser listados.
 
 Processos Filhos em Andamento podem ser listados.
 
+
+
+API Routes
+GET /ping - Retorna uma mensagem confirmando que a API está funcionando.
+GET /listarProcEmAndamento - Lista os processos em andamento.
+GET /todosFilhosEmAndamento - Lista todos os processos filhos em andamento.
+POST /processospai/inativar - Inativa um processo pai.
+POST /novoprocpai - Cria um novo processo pai.
+POST /novoprocfilho - Cria um novo processo filho.
