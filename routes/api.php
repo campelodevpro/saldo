@@ -17,8 +17,5 @@ Route::middleware('api')->group(function () {
     Route::post('/processospai/inativar', [ProcessoPaiController::class, 'inativarProcPai']);   
     Route::post('/novoprocpai', [ProcessoPaiController::class, 'novoProcPai']);
     Route::post('/novoprocfilho', [ProcessoPaiController::class, 'novoProcFilho']);
-    // Route::post('/novoprocfilho', function () {
-    //     return response()->json(['message' => 'API funcionando!']);
-
-    // });
+    
 });
