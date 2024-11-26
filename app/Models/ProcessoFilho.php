@@ -5,6 +5,39 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+/**
+ * @OA\Schema(
+ *     schema="ProcessoFilho",
+ *     type="object",
+ *     title="Processo Filho",
+ *     properties={
+ *         @OA\Property(
+ *             property="id",
+ *             type="integer",
+ *             description="ID do processo filho"
+ *         ),
+ *         @OA\Property(
+ *             property="STATUSPROCESSO",
+ *             type="string",
+ *             description="Status do processo"
+ *         ),
+ *         @OA\Property(
+ *             property="created_at",
+ *             type="string",
+ *             format="date-time",
+ *             description="Data de criação do processo"
+ *         ),
+ *         @OA\Property(
+ *             property="updated_at",
+ *             type="string",
+ *             format="date-time",
+ *             description="Data de atualização do processo"
+ *         )
+ *     }
+ * )
+ */
+
+
 class ProcessoFilho extends Model
 {
     //

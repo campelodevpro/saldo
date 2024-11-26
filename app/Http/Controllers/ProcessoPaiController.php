@@ -5,10 +5,133 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\ProcessoPai;
 use App\Models\ProcessoFilho;
+use Illuminate\Http\JsonResponse;
+
+
+
+/**
+ * @OA\Info(
+ *      version="1.0.0",
+ *      title="Documentação da API",
+ *      description="Descrição da API do Sistema",
+ *      @OA\Contact(
+ *          email="suporte@seusistema.com"
+ *      )
+ * )
+ *
+ * @OA\Server(
+ *      url=L5_SWAGGER_CONST_HOST,
+ *      description="Servidor da API"
+ * )
+ */
 
 class ProcessoPaiController extends Controller
 {
-    //
+    
+    /**
+ * Criar ou atualizar um processo pai.
+ *
+ * Esta rota permite criar um novo processo pai ou atualizar um já existente com base no campo `NPROCPAI`.
+ * Caso o processo já exista, o sistema verifica e atualiza informações como `VALORTOTAL`, `SALDO` e `NUMEROAPROVACAO`.
+ *
+ * @OA\Post(
+ *     path="/novoprocpai",
+ *     tags={"Processos"},
+ *     summary="Criar ou atualizar um processo pai",
+ *     description="Cria um novo processo pai ou atualiza um existente com base no número do processo.",
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="NPROCPAI",
+ *                 type="string",
+ *                 description="Número do Processo Pai",
+ *                 example="PRC12345"
+ *             ),
+ *             @OA\Property(
+ *                 property="VALORTOTAL",
+ *                 type="number",
+ *                 format="float",
+ *                 description="Valor total do processo pai",
+ *                 example=1000.50
+ *             ),
+ *             @OA\Property(
+ *                 property="STATUSPROCESSO",
+ *                 type="string",
+ *                 description="Status do processo pai",
+ *                 example="Em andamento"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=201,
+ *         description="Processo Pai criado com sucesso.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Processo Pai criado com sucesso."
+ *             ),
+ *             @OA\Property(
+ *                 property="processoPai",
+ *                 type="object",
+ *                 ref="#/components/schemas/ProcessoPai"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Processo Pai atualizado com sucesso.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Processo Pai atualizado com sucesso."
+ *             ),
+ *             @OA\Property(
+ *                 property="processoPai",
+ *                 type="object",
+ *                 ref="#/components/schemas/ProcessoPai"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Erro de saldo insuficiente.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="R$ Saldo Insuficiente Reduzir Despesa já alocada, Saldo: R$0"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=422,
+ *         description="Erro de validação.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="O campo VALORTOTAL é obrigatório."
+ *             ),
+ *             @OA\Property(
+ *                 property="errors",
+ *                 type="object",
+ *                 additionalProperties=@OA\Property(
+ *                     type="array",
+ *                     @OA\Items(type="string")
+ *                 )
+ *             )
+ *         )
+ *     )
+ * )
+ */
     public function novoProcPai(Request $request)
     {
         $validatedData = $request->validate([
@@ -230,8 +353,34 @@ class ProcessoPaiController extends Controller
    
     }
 
-    // Lista todos processos filhos em andamento
-    public function TodosFilhosEmAndamento()
+    /**
+     * Listar todos os processos filhos em andamento.
+     *
+     * @OA\Get(
+     *     path="/todosFilhosEmAndamento",
+     *     tags={"Processos"},
+     *     summary="Lista todos os processos filhos com status 'Em andamento'",
+     *     description="Retorna uma lista de processos filhos que estão em andamento.",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Lista de processos retornada com sucesso",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Processos Pai em andamento listados com sucesso."
+     *             ),
+     *             @OA\Property(
+     *                 property="processos",
+     *                 type="array",
+     *                 @OA\Items(ref="#/components/schemas/ProcessoFilho")
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    public function TodosFilhosEmAndamento(): JsonResponse
     {
         $processos = ProcessoFilho::where('STATUSPROCESSO', 'Em andamento')->get();
 

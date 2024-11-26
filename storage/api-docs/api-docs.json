@@ -1,0 +1,258 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Documentação da API",
+        "description": "Descrição da API do Sistema",
+        "contact": {
+            "email": "suporte@seusistema.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost/api/",
+            "description": "Servidor da API"
+        }
+    ],
+    "paths": {
+        "/novoprocpai": {
+            "post": {
+                "tags": [
+                    "Processos"
+                ],
+                "summary": "Criar ou atualizar um processo pai",
+                "description": "Cria um novo processo pai ou atualiza um existente com base no número do processo.",
+                "operationId": "e36e58188ffcaa9bb2a0df584ef0b284",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "NPROCPAI": {
+                                        "description": "Número do Processo Pai",
+                                        "type": "string",
+                                        "example": "PRC12345"
+                                    },
+                                    "VALORTOTAL": {
+                                        "description": "Valor total do processo pai",
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 1000.5
+                                    },
+                                    "STATUSPROCESSO": {
+                                        "description": "Status do processo pai",
+                                        "type": "string",
+                                        "example": "Em andamento"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Processo Pai criado com sucesso.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Processo Pai criado com sucesso."
+                                        },
+                                        "processoPai": {
+                                            "$ref": "#/components/schemas/ProcessoPai"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Processo Pai atualizado com sucesso.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Processo Pai atualizado com sucesso."
+                                        },
+                                        "processoPai": {
+                                            "$ref": "#/components/schemas/ProcessoPai"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erro de saldo insuficiente.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "R$ Saldo Insuficiente Reduzir Despesa já alocada, Saldo: R$0"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Erro de validação.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "O campo VALORTOTAL é obrigatório."
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                },
+                                                "property": null
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/todosFilhosEmAndamento": {
+            "get": {
+                "tags": [
+                    "Processos"
+                ],
+                "summary": "Lista todos os processos filhos com status 'Em andamento'",
+                "description": "Retorna uma lista de processos filhos que estão em andamento.",
+                "operationId": "b87a9f301c974f65fc01f5de3c4ca152",
+                "responses": {
+                    "200": {
+                        "description": "Lista de processos retornada com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Processos Pai em andamento listados com sucesso."
+                                        },
+                                        "processos": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ProcessoFilho"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "ProcessoFilho": {
+                "title": "Processo Filho",
+                "properties": {
+                    "id": {
+                        "description": "ID do processo filho",
+                        "type": "integer"
+                    },
+                    "STATUSPROCESSO": {
+                        "description": "Status do processo",
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "description": "Data de criação do processo",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "description": "Data de atualização do processo",
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "ProcessoPai": {
+                "title": "Processo Pai",
+                "description": "Representa um processo pai no sistema.",
+                "properties": {
+                    "id": {
+                        "description": "ID do processo pai",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "NPROCPAI": {
+                        "description": "Número do Processo Pai",
+                        "type": "string",
+                        "example": "PRC12345"
+                    },
+                    "VALORTOTAL": {
+                        "description": "Valor total do processo pai",
+                        "type": "number",
+                        "format": "float",
+                        "example": 1000.5
+                    },
+                    "NUMEROAPROVACAO": {
+                        "description": "Número de aprovações realizadas no processo",
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "STATUSPROCESSO": {
+                        "description": "Status do processo pai",
+                        "type": "string",
+                        "example": "Em andamento"
+                    },
+                    "SALDO": {
+                        "description": "Saldo disponível no processo pai",
+                        "type": "number",
+                        "format": "float",
+                        "example": 500
+                    },
+                    "created_at": {
+                        "description": "Data de criação do processo",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-11-26T10:30:00Z"
+                    },
+                    "updated_at": {
+                        "description": "Data de atualização do processo",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-11-26T12:00:00Z"
+                    }
+                },
+                "type": "object"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Processos",
+            "description": "Processos"
+        }
+    ]
+}
