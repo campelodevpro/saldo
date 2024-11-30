@@ -282,15 +282,11 @@ class ProcessoPaiController extends Controller
             //se o valor do filho for igual nao faz nada
             if(($validatedData['VALOR'] == $saldoFilho) ){
                 return response()->json([
-                    'message' => 'Sem Alteração!'
+                    'message' => '0'
                 ], 202);
             }
                 
-            
-
-
             //quando o processo filho for zerar o valor para liberar saldo
-            
             if(($validatedData['VALOR'] == 0.0) || ($validatedData['VALOR'] == 0.00)){
                 $processoPai->SALDO += $saldoFilho;
                 $processoFilho->VALOR = $validatedData['VALOR'];
@@ -298,11 +294,12 @@ class ProcessoPaiController extends Controller
                 $processoFilho->save();
 
                 return response()->json([
-                    'message' => 'Valor do Filho atualizado R$ 0.00. Valor liberado para Pai R$ '.$saldoFilho
-                ], 400);
+                    'message' => '-1'
+                ], 202);
             }
 
             //verificar se o valor é menor que valor armazenado,
+            //Reduz o valor comprometido no filho e libera saldo no pai
             if(($validatedData['VALOR'] < $saldoFilho) ){
                 //calcula a diferenca para estornar para o pai antes de atualizar para o novo valor a menor
                 $estorno = ($saldoFilho - $validatedData['VALOR']);
@@ -312,10 +309,11 @@ class ProcessoPaiController extends Controller
                 $processoFilho->save();
 
                 return response()->json([
-                    'message' => 'Valor do Filho Reduzido. Saldo do Pai R$ '.$processoPai->SALDO
-                ], 202);
+                    'message' => '2'
+                ], 201);
             }
             //verificar se o valor é maior que valor armazenado,
+            //aumentar o valor comprometido do filho e reduz saldo do pai
             if(($validatedData['VALOR'] > $saldoFilho) ){
                 //novo valor informado precisa ser (menor ou igual ao soma do valor do filho + saldo do pai)
                 if(($validatedData['VALOR'] <= ($saldoFilho+$processoPai->SALDO))){
@@ -326,31 +324,16 @@ class ProcessoPaiController extends Controller
                     $processoFilho->save();
 
                     return response()->json([
-                        'message' => 'Valor do Filho Aumentado. Saldo do Pai R$ '.$processoPai->SALDO
+                        'message' => '3'
                     ], 202);
                 }
                 
             }
 
-            // Verifica se eh reducao de valor, para debitar o filho e estornar o valor no pai
-            //quando o processo filho for zerar o valor para liberar saldo
-            //REDUCAO DE VALOR DO FILHO           
-            if(($validatedData['VALOR'] > 0.0) && ($validatedData['VALOR'] < $saldoFilho) ){
-                $diferencaEstornoPai =  ($processoFilho->VALOR - $validatedData['VALOR']);
-                $processoPai->SALDO += $diferencaEstornoPai;
-                $processoFilho->VALOR = $validatedData['VALOR'];
-                $processoPai->save();
-                $processoFilho->save();
-
-                return response()->json([
-                    'message' => 'Valor do Filho Reduzido. Valor liberado para Pai R$ '.$diferencaEstornoPai
-                ], 202);
-            }
-
             // Verificar se o novo valor não excede o saldo
             if (($validatedData['VALOR'] + $processoFilho->VALOR) > $processoPai->SALDO) {
                 return response()->json([
-                    'message' => 'Valor total do processo filho excede o saldo disponível do processo pai.'
+                    'message' => '-2'
                 ], 202);
             }   
             
@@ -364,14 +347,14 @@ class ProcessoPaiController extends Controller
             $processoPai->save();
 
             return response()->json([
-                'message' => 'Processo Filho atualizado com sucesso.',
+                'message' => '4',
                 'processoFilho' => $processoFilho
             ], 200);
         } else {
 
             if (($validatedData['VALOR'] > $processoPai->SALDO )) {
                 return response()->json([
-                    'message' => 'O valor do processo filho não pode ser maior que o saldo do processo pai.'
+                    'message' => '-3' //valor do processo filho nao pode ser maior que o saldo do pai
                 ], 202);
             }
             // Criar novo registro
@@ -388,7 +371,7 @@ class ProcessoPaiController extends Controller
             $processoPai->save();
 
             return response()->json([
-                'message' => 'Processo Filho criado com sucesso.',
+                'message' => '1',
                 'processoFilho' => $processoFilho
             ], 201);
         }
